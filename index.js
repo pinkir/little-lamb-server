@@ -53,14 +53,32 @@ async function run() {
 
     })
 
-    // get a toy
+    // get data by email
+    app.get('/mytoys/:email', async(req, res)=>{
+      console.log(req.params.email);
+      const result = await toyCollection.find({email: req.params.email}).toArray();
+      res.send(result);
+      
+    })
 
-    app.get('/tabToys/:id', async (req, res) => {
+    // update a toy
+
+    app.get('/tabToys/:quantity', async(req, res) =>{
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) }
-      const result = await toyCollection.findOne(query);
+      const query = {_id: new ObjectId(id)}
+      const result = await toyCollection.findOne(query)
       res.send(result)
     })
+
+    // Delete toy
+    app.delete('/tabToys/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await toyCollection.deleteOne(query);
+      res.send(result);
+    })
+
+    
 
 
     // add a toy

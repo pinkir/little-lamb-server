@@ -3,7 +3,7 @@ const app = express()
 const cors = require('cors');
 require('dotenv').config();
 const port = process.env.PORT || 5000
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 app.use(cors());
@@ -30,14 +30,41 @@ async function run() {
 
     const toyCollection = client.db('littleLamb').collection('tabToys');
 
-    app.get('/tabToys', async(req, res)=>{
+    app.get('/tabToys', async (req, res) => {
       const result = await toyCollection.find().toArray();
       res.send(result);
     })
 
+    // get tab toys
+    app.get('/tabToys/:text', async (req, res) => {
+      console.log(req.params.text);
+      if (req.params.text == 'lamb' || req.params.text == 'cow' || req.params.text == 'teddy') {
+        const result = await toyCollection.find({
+          sub_category
+            : req.params.text
+        }).toArray();
+        return res.send(result);
+
+      }
+      const result = await toyCollection.find().toArray();
+      res.send(result);
+
+
+
+    })
+
+    // get a toy
+
+    app.get('/tabToys/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await toyCollection.findOne(query);
+      res.send(result)
+    })
+
 
     // add a toy
-    app.post('/tabToys', async(req, res)=>{
+    app.post('/tabToys', async (req, res) => {
       const newToy = req.body;
       console.log(newToy);
       const result = await toyCollection.insertOne(newToy);

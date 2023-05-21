@@ -30,6 +30,26 @@ async function run() {
 
     const toyCollection = client.db('littleLamb').collection('tabToys');
 
+    const indexKeys = {toy_name: 1, sub_category: 1};
+    const indexOptions = {name: "toyNameSubCategory"};
+
+    const result = await toyCollection.createIndex(indexKeys, indexOptions);
+    console.log(result);
+
+    app.get('/toySearch/:text', async(req, res)=>{
+      const search = req.params.text;
+
+      const result = await toyCollection.find({
+        $or: [
+          {toy_name: {$regex: search, $options: "i"}},
+          {sub_category: { $regex: search, $options: "i"}}
+
+        ]
+      }).toArray()
+      res.send(result)
+    })
+    
+
     app.get('/tabToys', async (req, res) => {
       const result = await toyCollection.find().toArray();
       res.send(result);
@@ -63,7 +83,7 @@ async function run() {
 
     // update a toy
 
-    app.get('/tabToys/:quantity', async(req, res) =>{
+    app.get('/tabToysDetails/:id', async(req, res) =>{
       const id = req.params.id;
       const query = {_id: new ObjectId(id)}
       const result = await toyCollection.findOne(query)

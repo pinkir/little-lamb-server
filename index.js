@@ -30,25 +30,25 @@ async function run() {
 
     const toyCollection = client.db('littleLamb').collection('tabToys');
 
-    const indexKeys = {toy_name: 1, sub_category: 1};
-    const indexOptions = {name: "toyNameSubCategory"};
+    const indexKeys = { toy_name: 1, sub_category: 1 };
+    const indexOptions = { name: "toyNameSubCategory" };
 
     const result = await toyCollection.createIndex(indexKeys, indexOptions);
     console.log(result);
 
-    app.get('/toySearch/:text', async(req, res)=>{
+    app.get('/toySearch/:text', async (req, res) => {
       const search = req.params.text;
 
       const result = await toyCollection.find({
         $or: [
-          {toy_name: {$regex: search, $options: "i"}},
-          {sub_category: { $regex: search, $options: "i"}}
+          { toy_name: { $regex: search, $options: "i" } },
+          { sub_category: { $regex: search, $options: "i" } }
 
         ]
       }).toArray()
       res.send(result)
     })
-    
+
 
     app.get('/tabToys', async (req, res) => {
       const result = await toyCollection.find().toArray();
@@ -74,31 +74,61 @@ async function run() {
     })
 
     // get data by email
-    app.get('/mytoys/:email', async(req, res)=>{
+    app.get('/mytoys/:email', async (req, res) => {
       console.log(req.params.email);
-      const result = await toyCollection.find({email: req.params.email}).toArray();
+      const result = await toyCollection.find({ email: req.params.email }).toArray();
       res.send(result);
-      
+
     })
 
-    // update a toy
+    // single toy
 
-    app.get('/tabToysDetails/:id', async(req, res) =>{
+    app.get('/tabToysDetails/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await toyCollection.findOne(query)
       res.send(result)
     })
 
-    // Delete toy
-    app.delete('/tabToys/:id', async(req, res)=>{
+    // update toy
+
+    app.get('/update/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
+      const result = await toyCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.put('/update/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true }
+      const updateToy = req.body;
+      const toy = {
+        $set: {
+          seller_name: updateToy.seller_name,
+          toy_name: updateToy.toy_name,
+          email: updateToy.email,
+          sub_category: updateToy.sub_category,
+          picture: updateToy.picture,
+          description: updateToy.description,
+          price: updateToy.price,
+          quantity: updateToy.quantity
+        }
+      }
+      const result = await toyCollection.updateOne(filter, toy, options);
+      res.send(result);
+    })
+
+    // Delete toy
+    app.delete('/tabToys/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
       const result = await toyCollection.deleteOne(query);
       res.send(result);
     })
 
-    
+
 
 
     // add a toy

@@ -92,7 +92,7 @@ async function run() {
 
     })
 
-    // single toy
+    // single toy details
 
     app.get('/tabToysDetails/:id', async (req, res) => {
       const id = req.params.id;

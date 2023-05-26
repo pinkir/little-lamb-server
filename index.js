@@ -6,7 +6,13 @@ const port = process.env.PORT || 5000
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
-app.use(cors());
+const corsConfig = {
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
+}
+app.use(cors(corsConfig))
+app.options("", cors(corsConfig))
 app.use(express.json());
 
 
@@ -25,16 +31,16 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+     client.connect();
 
 
     const toyCollection = client.db('littleLamb').collection('tabToys');
 
-    const indexKeys = { toy_name: 1, sub_category: 1 };
-    const indexOptions = { name: "toyNameSubCategory" };
+    // const indexKeys = { toy_name: 1, sub_category: 1 };
+    // const indexOptions = { name: "toyNameSubCategory" };
 
-    const result = await toyCollection.createIndex(indexKeys, indexOptions);
-    console.log(result);
+    // const result = await toyCollection.createIndex(indexKeys, indexOptions);
+    // console.log(result);
 
     app.get('/toySearch/:text', async (req, res) => {
       const search = req.params.text;
@@ -51,7 +57,7 @@ async function run() {
 
 
     app.get('/tabToys', async (req, res) => {
-      const result = await toyCollection.find().toArray();
+      const result = await toyCollection.find().limit(20).toArray();
       res.send(result);
     })
 
@@ -76,7 +82,12 @@ async function run() {
     // get data by email
     app.get('/mytoys/:email', async (req, res) => {
       console.log(req.params.email);
-      const result = await toyCollection.find({ email: req.params.email }).toArray();
+      // const query = {};
+      // const price= parseInt(req.params.price)
+      const options = {
+        sort: { "price": 1}
+      }
+      const result = await toyCollection.find({ email: req.params.email }).sort({"price": 1}).toArray();
       res.send(result);
 
     })
@@ -127,6 +138,22 @@ async function run() {
       const result = await toyCollection.deleteOne(query);
       res.send(result);
     })
+
+
+    // Delete toy
+
+    // app.get('/delete', async (req, res) => {
+    //   const result = await toyCollection.find().toArray();
+    //   res.send(result);
+    // })
+
+
+    // app.delete('/delete/:id', async(req, res)=>{
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id)}
+    //   const result = await toyCollection.deleteOne(query);
+    //   res.send(result);
+    // })
 
 
 
